@@ -1,26 +1,42 @@
 # LV Forge
 
-LV Forge is a standalone MCP server for reviewing LabVIEW VIs. It pairs offline diagram analysis through LVKit with a Windows ActiveX check for live IDE runnability. The first release targets LabVIEW 2020 32-bit on Windows.
+LV Forge brings LabVIEW VI review into an MCP client. Use it to trace the wiring in a saved block diagram, compare two revisions of a VI, or ask the LabVIEW IDE whether a VI is runnable.
 
-| Tool | Result |
-| --- | --- |
-| `lv_inspect` | Saved diagram structure and file hash |
-| `lv_check` | Live IDE execution state and runnability |
-| `lv_diff` | Semantic differences between two saved VIs |
-| `lv_render` | Path to a generated temporary SVG |
+## Capabilities
 
-The server exposes inspection only. The live check may load a VI into the running IDE. If ActiveX attachment fails, the optional `allow_com_activation` argument lets COM connect to or start the registered LabVIEW version. Broken-wire counts and live unsaved-edit status are reported as unknown. Windows is required for the live check. The offline tools use [LVKit](https://github.com/pragmatest-dev/lvkit).
+| Tool | Use it to | Source |
+| --- | --- | --- |
+| `lv_inspect` | Inspect nodes, wiring, and connector pane terminals. The result includes the saved file's SHA-256 hash. | Saved VI |
+| `lv_diff` | Compare two saved VIs for changes in diagram structure and dataflow. | Two saved VIs |
+| `lv_render` | Generate a temporary SVG of a block diagram. | Saved VI |
+| `lv_check` | Read the execution state and runnability reported by the IDE. | Live LabVIEW IDE |
 
-## Install locally
+The offline tools use [LVKit](https://github.com/pragmatest-dev/lvkit) and can work without a running IDE. The live check uses Windows ActiveX and has been verified with **LabVIEW 2020 32-bit**. It may load the VI into the IDE. It never executes or saves the VI. Exact broken-wire counts and unsaved-edit status are reported as unknown.
 
-Use Python 3.11 or newer. In PowerShell, from this directory:
+## Install
+
+Use Python 3.11 or newer. Run these commands in PowerShell:
 
 ```powershell
+git clone https://github.com/harisunder1991/lv-forge.git
+cd lv-forge
 py -3.11 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-For an MCP client that uses an `mcpServers` JSON configuration, replace `C:/path/to/lv-forge` with your checkout directory:
+## Try the bundled examples
+
+Run this from the repository root:
+
+```powershell
+.\.venv\Scripts\python.exe examples\quickstart.py
+```
+
+The demo inspects the array-sum VI, compares it with the array-product VI, and prints the path to an SVG. It runs offline by default. To try the live check, start LabVIEW and add `--live`. See the [example guide](examples/README.md) for the opt-in COM activation option and expected results.
+
+## Connect your MCP client
+
+For clients that accept an `mcpServers` JSON configuration, replace `C:/path/to/lv-forge` with the full path to your checkout. The client launches LV Forge over stdio.
 
 ```json
 {
@@ -33,19 +49,9 @@ For an MCP client that uses an `mcpServers` JSON configuration, replace `C:/path
 }
 ```
 
-For a first check, ask your client to call `lv_inspect` on a saved sample VI, such as NI's `Creating New VI From Scratch.vi`. Pass its full path. Then start LabVIEW and ask for `lv_check` on the same file. If the IDE is already open but attach-only mode fails, try `allow_com_activation: true` if COM may open the registered LabVIEW version.
+Give your client the absolute paths to the VIs you want to review. For example, ask it to compare `examples/Sample_Add.vi` and `examples/Sample_Multiply.vi`, then explain the change inside the loop.
 
-To review a wiring change, give `lv_diff` the paths of the two saved VIs as `before_vi` and `after_vi`. Use `lv_render` for an SVG view of either saved diagram.
-
-## Quickstart & Examples
-
-The repository includes ready-to-use sample VIs in the [`examples/`](examples/README.md) directory (`Sample_Add.vi` and `Sample_Multiply.vi`).
-
-To run the automated demo that exercises all 4 tools in sequence:
-
-```powershell
-.\.venv\Scripts\python.exe examples\quickstart.py
-```
+If the offline diagram differs from what you see in LabVIEW, check whether your edits have been saved. If `lv_check` cannot attach, open LabVIEW and retry. You can pass `allow_com_activation: true` when COM may launch the registered LabVIEW version.
 
 ## Contributing
 

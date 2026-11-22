@@ -1,60 +1,64 @@
-"""Quickstart demo exercising all 4 LV Forge tools on sample VIs."""
+"""Demonstrate LV Forge's inspection tools using the bundled sample VIs."""
 
-import json
+import argparse
 from pathlib import Path
 import sys
 
-# Ensure parent directory is on sys.path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import server
+from mcp.server.mcpserver.exceptions import ToolError
 
 EXAMPLES_DIR = Path(__file__).resolve().parent
-VI_ADD = EXAMPLES_DIR / "Sample_Add.vi"
-VI_MULT = EXAMPLES_DIR / "Sample_Multiply.vi"
+sys.path.insert(0, str(EXAMPLES_DIR.parent))
+import server
 
 
-def main():
-    print("=" * 60)
-    print("LV Forge Quickstart Demo")
-    print("=" * 60)
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--live", action="store_true", help="also check runnability in LabVIEW")
+    parser.add_argument(
+        "--allow-com-activation",
+        action="store_true",
+        help="allow COM to start LabVIEW if attachment fails (requires --live)",
+    )
+    args = parser.parse_args()
+    if args.allow_com_activation and not args.live:
+        parser.error("--allow-com-activation requires --live")
 
-    # 1. lv_inspect
-    print("\n[1] Calling lv_inspect on Sample_Add.vi...")
-    inspect_res = server.lv_inspect(str(VI_ADD))
-    print(f"  SHA-256: {inspect_res['disk_sha256']}")
-    terminals = inspect_res["diagram"].get("connector_pane", {}).get("terminals", [])
-    print(f"  Connector Pane Terminals: {[t.get('name') for t in terminals]}")
+    add_vi = str(EXAMPLES_DIR / "Sample_Add.vi")
+    multiply_vi = str(EXAMPLES_DIR / "Sample_Multiply.vi")
 
-    # 2. lv_diff
-    print("\n[2] Calling lv_diff between Sample_Add.vi and Sample_Multiply.vi...")
-    diff_res = server.lv_diff(str(VI_ADD), str(VI_MULT))
-    print("  Semantic Diff Summary:")
-    diff_lines = [line for line in diff_res.splitlines() if line.strip()][:8]
-    for line in diff_lines:
-        print(f"    {line}")
+    try:
+        print("Inspecting Sample_Add.vi")
+        inspection = server.lv_inspect(add_vi)
+        print(f"  SHA-256: {inspection['disk_sha256']}")
+        terminals = inspection["diagram"].get("connector_pane", {}).get("terminals", [])
+        print(f"  Connector pane terminals: {[terminal['name'] for terminal in terminals]}")
 
-    # 3. lv_render
-    print("\n[3] Calling lv_render on Sample_Add.vi...")
-    render_res = server.lv_render(str(VI_ADD))
-    print(f"  Generated SVG: {render_res['svg_path']}")
+        print("\nComparing Sample_Add.vi with Sample_Multiply.vi")
+        print(server.lv_diff(add_vi, multiply_vi).rstrip())
 
-    # 4. lv_check (requires running LabVIEW on Windows)
-    if sys.platform == "win32":
-        print("\n[4] Calling lv_check on Sample_Add.vi...")
-        try:
-            check_res = server.lv_check(str(VI_ADD), allow_com_activation=True)
-            print(f"  LabVIEW Version: {check_res['labview_version']}")
-            print(f"  Execution State: {check_res['execution_state']}")
-            print(f"  Is Runnable:     {check_res['is_runnable']}")
-        except Exception as exc:
-            print(f"  ActiveX check skipped: {exc}")
-    else:
-        print("\n[4] lv_check skipped (Windows only).")
+        print("\nRendering Sample_Add.vi")
+        print(f"  SVG: {server.lv_render(add_vi)['svg_path']}")
 
-    print("\n" + "=" * 60)
-    print("Quickstart completed successfully!")
-    print("=" * 60)
+        if not args.live:
+            print("\nOffline demo passed. Use --live to request the IDE check.")
+            return 0
+
+        print("\nChecking Sample_Add.vi in LabVIEW")
+        result = server.lv_check(add_vi, allow_com_activation=args.allow_com_activation)
+        print(f"  LabVIEW version: {result['labview_version']}")
+        print(f"  Execution state: {result['execution_state']}")
+        print(f"  Runnable: {result['is_runnable']}")
+        if result["is_runnable"] is not True:
+            print("Live check did not confirm runnability.", file=sys.stderr)
+            return 1
+    except (ToolError, OSError) as exc:
+        print(f"Quickstart failed: {exc}", file=sys.stderr)
+        return 1
+
+    print("\nOffline demo and live check passed.")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.stdout.reconfigure(errors="backslashreplace")
+    raise SystemExit(main())

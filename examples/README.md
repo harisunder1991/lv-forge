@@ -1,62 +1,33 @@
-# LV Forge Examples
+# LV Forge examples
 
-This directory provides sample LabVIEW VIs and a quickstart script demonstrating all 4 LV Forge tools: `lv_inspect`, `lv_check`, `lv_diff`, and `lv_render`.
+These two saved VIs show how LV Forge reviews a small change in LabVIEW dataflow.
 
-## Files Included
+| File | Diagram |
+| --- | --- |
+| `Sample_Add.vi` | Sums a numeric array with an Add node and a shift register initialized to `0.0`. |
+| `Sample_Multiply.vi` | Multiplies the array elements with a Multiply node and a shift register initialized to `1.0`. |
 
-| File | Description |
-| :--- | :--- |
-| `Sample_Add.vi` | Simple LabVIEW VI taking a numeric array input and computing its sum with an Add loop. |
-| `Sample_Multiply.vi` | Identical structure to `Sample_Add.vi`, but uses a Multiply function instead of Add. Ideal for testing semantic diffs. |
-| `quickstart.py` | Python script that executes and displays the results of all 4 tools in sequence. |
+## Run the demo
 
----
-
-## Running the Quickstart
-
-Activate your virtual environment and run `quickstart.py`:
+From the repository root, after installing the [Python dependencies](../README.md#install):
 
 ```powershell
 .\.venv\Scripts\python.exe examples\quickstart.py
 ```
 
-### Expected Output
+The script calls the same Python functions used by the MCP tools. It prints the Add VI's SHA-256 hash and connector pane terminals, shows the semantic diff, and prints the path to a temporary SVG. Look for the removed `Add` node and added `Multiply` node in the diff. The default demo reads the saved files and generates the SVG without opening LabVIEW.
 
-```text
-============================================================
-LV Forge Quickstart Demo
-============================================================
+### Optional live check
 
-[1] Calling lv_inspect on Sample_Add.vi...
-  SHA-256: 738b9021bec3aa718e7c3d03336ae742d1f04f6b075fb3ff40dda63971bb7278
-  Connector Pane Terminals: ['Array', 'Numeric']
+On Windows, start LabVIEW and add `--live` to check the Add VI's runnability. Use the second command only if you want COM to be able to launch the registered LabVIEW version when attachment fails.
 
-[2] Calling lv_diff between Sample_Add.vi and Sample_Multiply.vi...
-  Semantic Diff Summary:
-    + for:
-    + Multiply(y=loop_108.shift0, x=Array) -> product
-    - for:
-    - Add(y=loop_43.shift0, x=Array) -> sum
-
-[3] Calling lv_render on Sample_Add.vi...
-  Generated SVG: C:\Users\...\AppData\Local\Temp\lv-forge-....svg
-
-[4] Calling lv_check on Sample_Add.vi...
-  LabVIEW Version: 20.0
-  Execution State: idle
-  Is Runnable:     True
-
-============================================================
-Quickstart completed successfully!
-============================================================
+```powershell
+.\.venv\Scripts\python.exe examples\quickstart.py --live
+.\.venv\Scripts\python.exe examples\quickstart.py --live --allow-com-activation
 ```
 
----
+The live check can load the VI into the IDE without executing it. The demo exits with a nonzero status if a requested check fails or runnability cannot be confirmed.
 
-## Using with an MCP Client (Claude Desktop, Cursor, Antigravity)
+## Try the same files through MCP
 
-Point your MCP client directly to these sample files:
-* To inspect: `lv_inspect(vi_path="<path-to-repo>/examples/Sample_Add.vi")`
-* To diff: `lv_diff(before_vi="<path-to-repo>/examples/Sample_Add.vi", after_vi="<path-to-repo>/examples/Sample_Multiply.vi")`
-* To check runnability: `lv_check(vi_path="<path-to-repo>/examples/Sample_Add.vi")`
-* To render SVG: `lv_render(vi_path="<path-to-repo>/examples/Sample_Add.vi")`
+After [connecting an MCP client](../README.md#connect-your-mcp-client), give the client the absolute paths of the two sample VIs. For example, ask it to compare the saved diagrams and render the Add VI to SVG. The client can use `lv_diff` and `lv_render` for those requests.
