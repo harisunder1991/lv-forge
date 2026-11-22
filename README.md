@@ -37,6 +37,16 @@ For a first check, ask your client to call `lv_inspect` on a saved sample VI, su
 
 To review a wiring change, give `lv_diff` the paths of the two saved VIs as `before_vi` and `after_vi`. Use `lv_render` for an SVG view of either saved diagram.
 
+## Quickstart & Examples
+
+The repository includes ready-to-use sample VIs in the [`examples/`](examples/README.md) directory (`Sample_Add.vi` and `Sample_Multiply.vi`).
+
+To run the automated demo that exercises all 4 tools in sequence:
+
+```powershell
+.\.venv\Scripts\python.exe examples\quickstart.py
+```
+
 ## Contributing
 
 Useful first contributions include testing the live check across LabVIEW versions and adding reproducible fixture cases for diagram inspection. In bug reports, include Windows and Python versions, LabVIEW version and bitness, the tool and arguments used, and a minimal example you have permission to share.
