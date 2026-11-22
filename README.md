@@ -47,7 +47,10 @@ Run the unit tests from the checkout with `.\.venv\Scripts\python.exe -m unittes
 
 Harisunder Chidambaram created LV Forge's standalone MCP integration. LV Forge provides the tool interface, input validation, result reporting, and the live Windows LabVIEW check.
 
+OpenAI Codex (ChatGPT's coding agent) helped implement, test, and package the standalone release. Google Antigravity helped investigate and verify LabVIEW 2020 VI Scripting and compatibility in the earlier internal prototype.
+
 - [PragmaTest and the LVKit contributors](https://github.com/pragmatest-dev/lvkit) provide the offline VI analysis, diff, and renderer through the LVKit dependency.
+- The [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk) provides the MCP server interface. [pywin32](https://github.com/mhammond/pywin32) provides access to Windows COM automation.
 - [Jan Göbel (CalmyJane)](https://github.com/CalmyJane/labview_assistant) created LabVIEW Assistant, which was evaluated during earlier development. The standalone server does not include its code or VIs.
 - [National Instruments](https://www.ni.com/) provides LabVIEW, its ActiveX interface, and the installed examples used for verification.
 
