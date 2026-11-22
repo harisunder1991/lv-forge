@@ -62,6 +62,12 @@ Ask the MCP client to call `lv_report` with the absolute path to a saved VI. Ope
 
 Set `include_live_check: true` to add the IDE's runnability result in a separate section. The report records inspection evidence. Keep functional test results with it when documenting validation.
 
+## Known limitations
+
+- **Partial parses on LabVIEW 2020.** LVKit can report a `VITS` parse warning on the bundled Add and Multiply VIs while still extracting the diagrams. Larger VIs can produce other parser warnings or fallback control labels. Check `partial_analysis` and `warnings` before relying on the extracted data.
+- **The reported SubVI list can be empty or incomplete.** The HTML report lists named calls found in the extracted diagram. Unresolved calls, dynamically selected VIs, and calls omitted by a partial parse can be absent.
+- **`lv_check` is limited to the IDE's execution state and associated runnability.** It cannot identify the exact broken wire, count broken wires, or detect unsaved diagram edits. See the report's saved-file section for the offline evidence.
+
 ## Contributing
 
 Useful first contributions include testing the live check across LabVIEW versions and adding reproducible fixture cases for diagram inspection. In bug reports, include Windows and Python versions, LabVIEW version and bitness, the tool and arguments used, and a minimal example you have permission to share.

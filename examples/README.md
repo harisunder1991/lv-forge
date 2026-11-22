@@ -7,6 +7,16 @@ These two saved VIs show how LV Forge reviews a small change in LabVIEW dataflow
 | `Sample_Add.vi` | Sums a numeric array with an Add node and a shift register initialized to `0.0`. |
 | `Sample_Multiply.vi` | Multiplies the array elements with a Multiply node and a shift register initialized to `1.0`. |
 
+## Case and SubVI fixtures
+
+These saved VIs are from the [LabVIEW Open Source Project's LV-MQTT-Broker](https://github.com/LabVIEW-Open-Source/LV-MQTT-Broker/tree/01aa7848b707cb5ac609e8d27fc6ae94b51d65d0/source/TopicFilter) at commit `01aa7848b707cb5ac609e8d27fc6ae94b51d65d0`. The binary examples are unchanged and retain their [0BSD license](mqtt-topic-filter/LICENSE). They are intended for offline inspection, SVG rendering, and report reproduction. For IDE execution or dependency resolution, use the full upstream project.
+
+| File | What to check with `lv_inspect` or `lv_report` |
+| --- | --- |
+| [Create TopicFilter.vi](mqtt-topic-filter/Create%20TopicFilter.vi) | The diagram includes a Case Structure with `No Error` and `Error` frames, plus nested cases. |
+| [Evaluate.vi](mqtt-topic-filter/Evaluate.vi) | The detected SubVI list includes `Read Topic Filter.vi`. The wildcard Case Structure includes `#`, `+`, and the default frame. |
+| [Read Topic Filter.vi](mqtt-topic-filter/Read%20Topic%20Filter.vi) | The accessor called by `Evaluate.vi`, included for separate inspection. |
+
 ## Run the demo
 
 From the repository root, after installing the [Python dependencies](../README.md#install):
