@@ -34,14 +34,25 @@ def main() -> int:
         print(f"  Connector pane terminals: {[terminal['name'] for terminal in terminals]}")
 
         print("\nComparing Sample_Add.vi with Sample_Multiply.vi")
-        print(server.lv_diff(add_vi, multiply_vi).rstrip())
+        comparison = server.lv_diff(add_vi, multiply_vi)
+        print(comparison["diff"].rstrip())
 
         print("\nRendering Sample_Add.vi")
-        print(f"  SVG: {server.lv_render(add_vi)['svg_path']}")
+        rendering = server.lv_render(add_vi)
+        print(f"  SVG: {rendering['svg_path']}")
+
+        offline_results = (inspection, comparison, rendering)
+        for warning in dict.fromkeys(warning for result in offline_results for warning in result["warnings"]):
+            print(f"  {warning}", file=sys.stderr)
+        partial = any(result["partial_analysis"] for result in offline_results)
+
+        if partial:
+            print("\nOffline analysis is partial. See the warnings above.", file=sys.stderr)
 
         if not args.live:
-            print("\nOffline demo passed. Use --live to request the IDE check.")
-            return 0
+            if not partial:
+                print("\nOffline demo passed. Use --live to request the IDE check.")
+            return 3 if partial else 0
 
         print("\nChecking Sample_Add.vi in LabVIEW")
         result = server.lv_check(add_vi, allow_com_activation=args.allow_com_activation)
@@ -55,8 +66,8 @@ def main() -> int:
         print(f"Quickstart failed: {exc}", file=sys.stderr)
         return 1
 
-    print("\nOffline demo and live check passed.")
-    return 0
+    print("\nLive check passed." if partial else "\nOffline demo and live check passed.")
+    return 3 if partial else 0
 
 
 if __name__ == "__main__":

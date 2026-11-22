@@ -17,6 +17,8 @@ From the repository root, after installing the [Python dependencies](../README.m
 
 The script calls the same Python functions used by the MCP tools. It prints the Add VI's SHA-256 hash and connector pane terminals, shows the semantic diff, and prints the path to a temporary SVG. Look for the removed `Add` node and added `Multiply` node in the diff. The default demo reads the saved files and generates the SVG without opening LabVIEW.
 
+LVKit can report partial extraction on these examples, including a warning about the `VITS` block. The demo displays that warning alongside the diagram data LVKit was able to extract.
+
 ### Optional live check
 
 On Windows, start LabVIEW and add `--live` to check the Add VI's runnability. Use the second command only if you want COM to be able to launch the registered LabVIEW version when attachment fails.
@@ -26,7 +28,7 @@ On Windows, start LabVIEW and add `--live` to check the Add VI's runnability. Us
 .\.venv\Scripts\python.exe examples\quickstart.py --live --allow-com-activation
 ```
 
-The live check can load the VI into the IDE without executing it. The demo exits with a nonzero status if a requested check fails or runnability cannot be confirmed.
+The live check can load the VI into the IDE without executing it. The demo exits with status `3` for partial offline analysis, or status `1` if a requested check fails or runnability cannot be confirmed.
 
 ## Try the same files through MCP
 

@@ -10,8 +10,11 @@ LV Forge brings LabVIEW VI review into an MCP client. Use it to trace the wiring
 | `lv_diff` | Compare two saved VIs for changes in diagram structure and dataflow. | Two saved VIs |
 | `lv_render` | Generate a temporary SVG of a block diagram. | Saved VI |
 | `lv_check` | Read the execution state and runnability reported by the IDE. | Live LabVIEW IDE |
+| `lv_report` | Generate a self-contained HTML inspection report with the VI hash, saved version, diagram, and diagnostics. | Saved VI, with an optional live IDE check |
 
 The offline tools use [LVKit](https://github.com/pragmatest-dev/lvkit) and can work without a running IDE. The live check uses Windows ActiveX and has been verified with **LabVIEW 2020 32-bit**. It may load the VI into the IDE. It never executes or saves the VI. Exact broken-wire counts and unsaved-edit status are reported as unknown.
+
+Offline results include `warnings`, `notices`, and a `partial_analysis` flag. LV Forge uses a fresh temporary LVKit cache for each call so cached results do not suppress parser warnings. It preserves usable partial output and surfaces warnings even when LVKit exits successfully. Inspect the warnings before relying on a diagram or diff. The `lv_diff` result contains its text in the `diff` field.
 
 ## Install
 
@@ -52,6 +55,12 @@ For clients that accept an `mcpServers` JSON configuration, replace `C:/path/to/
 Give your client the absolute paths to the VIs you want to review. For example, ask it to compare `examples/Sample_Add.vi` and `examples/Sample_Multiply.vi`, then explain the change inside the loop.
 
 If the offline diagram differs from what you see in LabVIEW, check whether your edits have been saved. If `lv_check` cannot attach, open LabVIEW and retry. You can pass `allow_com_activation: true` when COM may launch the registered LabVIEW version.
+
+## Save a VI inspection report
+
+Ask the MCP client to call `lv_report` with the absolute path to a saved VI. Open the returned `report_path` in a browser and copy the HTML out of the temporary folder if you want to retain it. It includes a UTC timestamp, the saved LabVIEW version when available, detected inputs and outputs, named SubVI calls, the embedded SVG, and any analysis warnings.
+
+Set `include_live_check: true` to add the IDE's runnability result in a separate section. The report records inspection evidence. Keep functional test results with it when documenting validation.
 
 ## Contributing
 
